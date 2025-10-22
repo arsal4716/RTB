@@ -35,7 +35,7 @@ const fieldMap = {
   jornaya_leadid: "jornaya_leadid",
   trusted_id: "trusted_id",
   income: "income",
-  QLE:"QLE",
+  QLE: "QLE",
   ip_address: "ip_address",
   Optin_Timestamp: "Optin_Timestamp",
 };
@@ -134,7 +134,7 @@ const createForm = async (req, res) => {
           if (formData.jornaya_leadid && formData.trusted_id) break;
         }
 
-        if (!formData.jornaya_leadid || !formData.trusted_id) {
+        if (!formData.jornaya_leadid && !formData.trusted_id) {
           return errorResponse(
             res,
             "Missing Jornaya Lead ID or Trusted Form ID  after scrubber API check.",
@@ -187,7 +187,7 @@ const createForm = async (req, res) => {
     });
 
     const fullUrlWithQuery = `${fullRingbaUrl}?${queryParams.toString()}`;
-    console.log('api url',fullUrlWithQuery)
+    console.log("api url", fullUrlWithQuery);
     const ringbaResponse = await axios.get(fullUrlWithQuery);
     const ringbaData = ringbaResponse.data;
 
