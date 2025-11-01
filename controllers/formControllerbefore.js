@@ -1,5 +1,3 @@
-
-// before it's working fine when no api add for jornaya 
 const Form = require("../models/Form");
 const { appendFormDataToSheet } = require("../Helper/googleSheet");
 const { google } = require("googleapis");
@@ -31,7 +29,15 @@ const fieldMap = {
   state: "state",
   address: "address",
   dob: "dob",
+  gender: "gender",
   Age: "Age",
+  source_url: "http://isurewise.com/",
+  jornaya_leadid: "jornaya_leadid",
+  trusted_id: "trusted_id",
+  income: "income",
+  QLE: "QLE",
+  ip_address: "ip_address",
+  Optin_Timestamp: "Optin_Timestamp",
 };
 
 const createForm = async (req, res) => {
@@ -49,7 +55,6 @@ const createForm = async (req, res) => {
     if (!phone) {
       return errorResponse(res, "Phone number is required");
     }
-
     const cleanPhone = phone.replace(/\D/g, "");
     const phoneWith1 = cleanPhone.length === 10 ? `1${cleanPhone}` : cleanPhone;
 
@@ -68,7 +73,7 @@ const createForm = async (req, res) => {
       console.error("Google Sheet Error:", sheetErr.message);
     }
 
-    if (isDuplicateInSheet) {
+    if (isDuplicateInSheet && !formData.forceRetry) {
       return errorResponse(
         res,
         "This phone number already exists in our internal DB.",
@@ -76,11 +81,13 @@ const createForm = async (req, res) => {
         400
       );
     }
+
+    // === STEP 2: HealthConnect Scrub ===
     try {
       const healthURL = `https://hcs.tldcrm.com/api/public/dialer/ready/${phoneWith1}?qui=27053&adg=true`;
       const healthRes = await axios.get(healthURL);
 
-      if (healthRes.data?.ready === 0) {
+      if (healthRes.data?.ready === 0 && !formData.forceRetry) {
         return errorResponse(
           res,
           "Duplicate in SCRUB campaign.",
@@ -95,6 +102,54 @@ const createForm = async (req, res) => {
     // === STEP 3: Check for ZIP code ===
     if (!zipcode) {
       return errorResponse(res, "ZIP Code is required after duplicate check");
+    }
+    if (
+      (publisher === "BaliTech" || publisher === "BT02") &&
+      (!formData.jornaya_leadid || !formData.trusted_id)
+    ) {
+      const campaignsToTry = ["ACA", "FE", "SSDI", "MediPlans"];
+      try {
+        for (let camp of campaignsToTry) {
+          const scrubberResponse = await axios.get(
+            `https://scrubber.balitech.org/api/search.php?phone=${formData.phone}&campaign=${camp}`
+          );
+
+          const scrubDataList = scrubberResponse.data?.data?.data;
+          if (Array.isArray(scrubDataList)) {
+            for (let record of scrubDataList) {
+              const leadId = record[4];
+              const ip_address = record[5];
+              const Optin_Timestamp = record[6];
+              const trustedFormUrl = record[7];
+              if (leadId || trustedFormUrl || ip_address || Optin_Timestamp) {
+                formData.jornaya_leadid = formData.jornaya_leadid || leadId;
+                formData.trusted_id = formData.trusted_id || trustedFormUrl;
+                formData.ip_address = formData.ip_address || ip_address;
+                formData.Optin_Timestamp =
+                  formData.Optin_Timestamp || Optin_Timestamp;
+                break;
+              }
+            }
+          }
+          if (formData.jornaya_leadid && formData.trusted_id) break;
+        }
+
+        if (!formData.jornaya_leadid && !formData.trusted_id) {
+          return errorResponse(
+            res,
+            "Missing Jornaya Lead ID or Trusted Form ID  after scrubber API check.",
+            {},
+            400
+          );
+        }
+      } catch (err) {
+        return errorResponse(
+          res,
+          `Error fetching Jornaya/Trusted Form from: ${err.message}`,
+          {},
+          500
+        );
+      }
     }
 
     // === STEP 4: Prepare Ringba Request ===
@@ -132,14 +187,20 @@ const createForm = async (req, res) => {
     });
 
     const fullUrlWithQuery = `${fullRingbaUrl}?${queryParams.toString()}`;
+    console.log("api url", fullUrlWithQuery);
     const ringbaResponse = await axios.get(fullUrlWithQuery);
     const ringbaData = ringbaResponse.data;
 
+    const bidId = ringbaData?.bidId;
+    if (bidId) formData.bidId = bidId;
+
     // === STEP 5: Check Ringba Agent Response ===
     if (!ringbaData.phoneNumber) {
-      return errorResponse(res, "No agents Available.", {
+      return successResponse(res, "No agents available.", {
         ringbaResponse: ringbaData,
+        bidId: bidId || null,
         blacklistMessage: null,
+        blocked: false,
       });
     }
 
@@ -160,7 +221,6 @@ const createForm = async (req, res) => {
       );
 
       blacklistMessage = blResponse.data.message;
-
       if (blacklistMessage?.toLowerCase() === "blacklisted") {
         return errorResponse(res, "Number Blocked by BLA added to DNC", {
           ringbaResponse: ringbaData,
@@ -173,8 +233,10 @@ const createForm = async (req, res) => {
       blacklistMessage = "Blacklist check failed";
     }
 
-    // === STEP 7: Save to Database and Sheet (only after Ringba & BLA success) ===
+    // === STEP 7: Save Form ===
     if (formData._id) delete formData._id;
+    formData.attemptId = `${phoneWith1}-${Date.now()}`;
+    formData.attemptTime = new Date().toISOString();
 
     const savedForm = await Form.create(formData);
     await appendFormDataToSheet(formData, "Form");
@@ -185,6 +247,7 @@ const createForm = async (req, res) => {
       {
         savedForm,
         ringbaResponse: ringbaData,
+        bidId,
         blacklistMessage,
         blocked: false,
       }

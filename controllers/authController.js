@@ -18,7 +18,8 @@ const IP_CHECK_EXEMPT_PUBLISHERS = [
   "Assured",
   "hlg",
   "Quativa",
-  "RNT"
+  "RNT",
+  "Actual Sales"
 ].map(pub => normalize(pub));
 
 const registerUser = async (req, res, next) => {

@@ -1,22 +1,53 @@
 const Form = require("../models/Form");
 const { appendFormDataToSheet } = require("../Helper/googleSheet");
-const { google } = require("googleapis");
-const keys = require("../sheet.json");
 const axios = require("axios");
 const fieldConfig = require("./fieldConfig");
 const stateNameToCode = require("./stateNameToCode");
+const {logBlaHit} = require("./blaHitController")
 const {
   ringbaId: serverRingbaIds,
   baseRingbaUrl,
 } = require("../api/ringbaUrls");
 const { successResponse, errorResponse } = require("../utils/response");
+const { google } = require("googleapis");
+const NodeCache = require("node-cache");
+const keys = require("../sheet.json");
+const cache = new NodeCache({ stdTTL: 4 * 60 * 60 });
 const auth = new google.auth.JWT(keys.client_email, null, keys.private_key, [
   "https://www.googleapis.com/auth/spreadsheets",
 ]);
 const sheets = google.sheets({ version: "v4", auth });
+
 const SPREADSHEET_ID = "10wDKwHfS5ytpOxSPIr89PG0J1hRoKQ7S_3Qvjk-Pqlk";
 const TAB_NAME = "Database";
 
+// === HELPER: FETCH AND CACHE GOOGLE SHEET DATA ===
+async function getSheetNumbers() {
+  const cached = cache.get("sheetNumbers");
+  if (cached) {
+    return cached;
+  }
+
+  console.log("Fetching fresh data from Google Sheets...");
+  try {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${TAB_NAME}!A:A`,
+    });
+
+    const numbers = res.data.values?.flat() || [];
+    cache.set("sheetNumbers", numbers);
+    console.log(`Cached ${numbers.length} phone numbers from Google Sheet`);
+    return numbers;
+  } catch (err) {
+    console.error("Google Sheet Fetch Error:", err.message);
+    return [];
+  }
+}
+getSheetNumbers();
+setInterval(() => getSheetNumbers(), 4 * 60 * 60 * 1000);
+
+// === FIELD MAP ===
 const fieldMap = {
   phone: "CID",
   zipcode: "ZipCode",
@@ -39,7 +70,6 @@ const fieldMap = {
   ip_address: "ip_address",
   Optin_Timestamp: "Optin_Timestamp",
 };
-
 const createForm = async (req, res) => {
   try {
     const formData = req.body;
@@ -58,19 +88,13 @@ const createForm = async (req, res) => {
     const cleanPhone = phone.replace(/\D/g, "");
     const phoneWith1 = cleanPhone.length === 10 ? `1${cleanPhone}` : cleanPhone;
 
-    // === STEP 1: Check Google Sheet for Duplicates ===
+    // === STEP 1: Check Google Sheet
     let isDuplicateInSheet = false;
-
     try {
-      const sheetRes = await sheets.spreadsheets.values.get({
-        spreadsheetId: SPREADSHEET_ID,
-        range: `${TAB_NAME}!A:A`,
-      });
-
-      const sheetNumbers = sheetRes.data.values?.flat() || [];
+      const sheetNumbers = await getSheetNumbers();
       isDuplicateInSheet = sheetNumbers.includes(phoneWith1);
     } catch (sheetErr) {
-      console.error("Google Sheet Error:", sheetErr.message);
+      console.error("Google Sheet Cache Error:", sheetErr.message);
     }
 
     if (isDuplicateInSheet && !formData.forceRetry) {
@@ -99,10 +123,11 @@ const createForm = async (req, res) => {
       console.error("HealthConnect API Error:", err.message);
     }
 
-    // === STEP 3: Check for ZIP code ===
+    // === STEP 3: ZIP Code Check ===
     if (!zipcode) {
       return errorResponse(res, "ZIP Code is required after duplicate check");
     }
+
     if (
       (publisher === "BaliTech" || publisher === "BT02") &&
       (!formData.jornaya_leadid || !formData.trusted_id)
@@ -137,7 +162,7 @@ const createForm = async (req, res) => {
         if (!formData.jornaya_leadid && !formData.trusted_id) {
           return errorResponse(
             res,
-            "Missing Jornaya Lead ID or Trusted Form ID  after scrubber API check.",
+            "Missing Jornaya Lead ID or Trusted Form ID after scrubber API check.",
             {},
             400
           );
@@ -151,8 +176,6 @@ const createForm = async (req, res) => {
         );
       }
     }
-
-    // === STEP 4: Prepare Ringba Request ===
     const stateFullName = formData.state;
     const stateAbbr = stateNameToCode[stateFullName];
     formData.state = stateAbbr;
@@ -204,12 +227,13 @@ const createForm = async (req, res) => {
       });
     }
 
-    // === STEP 6: BLA Blacklist Check ===
+    // === STEP 6: Blacklist Check ===
     const phoneToCheck =
       cleanPhone.length === 10 ? `1${cleanPhone}` : cleanPhone;
     let blacklistMessage = null;
 
     try {
+    await logBlaHit(publisher, campaign);
       const blResponse = await axios.get(
         "https://api.blacklistalliance.net/lookup",
         {
@@ -253,10 +277,7 @@ const createForm = async (req, res) => {
       }
     );
   } catch (error) {
-    console.error(
-      "Error in createForm:",
-      error?.response?.data || error.message
-    );
+    console.error("Error in createForm:", error?.response?.data || error.message);
     return errorResponse(
       res,
       error.message ||

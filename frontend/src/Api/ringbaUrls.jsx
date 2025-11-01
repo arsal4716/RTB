@@ -20,6 +20,7 @@ export const ringbaId = {
     "U65-Xfers-20K-PH -RTB":"d1c6c56e4ff748b782be70714763af71.json",
     "Medicare-CPA-Xfers-RTB":"efdbaab4c0dd49dfa503d74b99c5a7a7.json",
     "ACA-Xfers-RevShare - RTB":"bcdd5c3142fb46c2a95ce63bf312afae.json",
+    "NSBAGroup-ACA-Xfers-Downsel":"97d1aef0f3144b14a46b80f66cfea568.json",
   },
   Assured: {
     "ACA-Xfers-CPL-RTB": "17ae5253e1cb4a79a1dcf3d75a65f9d5.json",
@@ -40,5 +41,8 @@ export const ringbaId = {
   "RNT":{
     "ACA-CPL-Scrub":"8b75ddbcc05943c08ef8fa5f8c8e9ed8.json",
     "FE-ENG-CPA-RTB":"4f5a4b01654348eb802369d675cb2042.json"
+  },
+  "Actual Sales": {
+    "MVA-Xfers": "77dba2c5319749a0b7270fe6eea4787d.json",
   },
 };

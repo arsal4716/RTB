@@ -20,6 +20,7 @@ export const campaignRelations = {
     "Medicare-CPA-Xfers-RTB",
     "U65-Xfers-20K-PH -RTB",
     "ACA-Xfers-RevShare - RTB",
+    "NSBAGroup-ACA-Xfers-Downsel"
   ],
   Assured: ["ACA-Xfers-CPL-RTB"],
   "Workerz LLC": ["ACA-CPL-Scrub"],
@@ -28,4 +29,5 @@ export const campaignRelations = {
   "RNT winkels": ["FE-ENG-CPA-RTB"],
   "MXZ": ["ACA-Scrub"],
   "RNT": ["ACA-CPL-Scrub"],
+  "Actual Sales":["MVA-Xfers"]
 };
