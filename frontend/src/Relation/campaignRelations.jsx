@@ -8,6 +8,7 @@ export const campaignRelations = {
     "U65-Xfers-20K-PH -RTB",
     "ACA-Xfers-CPL-RTB - NonLIQLE (REG)",
     "ACA-Xfers-CPL-RTB-LIQLE",
+    "Medicare-ENG-WarmXfers"
   ],
   BT02: [
     "Medicare-CPA-Xfers-ENG"
@@ -20,7 +21,8 @@ export const campaignRelations = {
     "Medicare-CPA-Xfers-RTB",
     "U65-Xfers-20K-PH -RTB",
     "ACA-Xfers-RevShare - RTB",
-    "NSBAGroup-ACA-Xfers-Downsel"
+    "NSBAGroup-ACA-Xfers-Downsel",
+    "Medicare-ENG-WarmXfers"
   ],
   Assured: ["ACA-Xfers-CPL-RTB"],
   "Workerz LLC": ["ACA-CPL-Scrub"],

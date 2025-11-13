@@ -94,6 +94,15 @@ const fieldConfig = {
       "trusted_id",
       "income",
     ],
+    "Medicare-ENG-WarmXfers": [
+      "phone",
+      "zipcode",
+      "exposeCallerId",
+      "agentName",
+      "state",
+      "jornaya_leadid",
+      "trusted_id",
+    ],
   },
   BT02: {
     "Medicare-CPA-Xfers-ENG": [
@@ -207,6 +216,15 @@ const fieldConfig = {
       "email",  
       "age" 
      ],
+      "Medicare-ENG-WarmXfers": [
+      "phone",
+      "zipcode",
+      "exposeCallerId",
+      "agentName",
+      "state",
+      "jornaya_leadid",
+      "Optin_Timestamp",
+    ],
   },
   Assured: {
     "ACA-Xfers-CPL-RTB": [
