@@ -94,15 +94,6 @@ const fieldConfig = {
       "trusted_id",
       "income",
     ],
-    "Medicare-ENG-WarmXfers": [
-      "phone",
-      "zipcode",
-      "exposeCallerId",
-      "agentName",
-      "state",
-      "jornaya_leadid",
-      "trusted_id",
-    ],
   },
   BT02: {
     "Medicare-CPA-Xfers-ENG": [
@@ -123,6 +114,15 @@ const fieldConfig = {
       "income",
       "gender",
       "Optin_Timestamp",
+    ],
+    "Medicare-ENG-WarmXfers": [
+      "phone",
+      "zipcode",
+      "exposeCallerId",
+      "agentName",
+      "state",
+      "jornaya_leadid",
+      "trusted_id",
     ],
   },
   "Leads Expert": {

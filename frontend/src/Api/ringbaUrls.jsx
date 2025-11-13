@@ -8,10 +8,10 @@ export const ringbaId = {
     "U65-Xfers-20K-PH -RTB":"001781a86fd142d0964a947dc73b09e1.json",
     "ACA-Xfers-CPL-RTB - NonLIQLE (REG)":"067e4ec487c9487ab8b8baae029831e3.json",
     "ACA-Xfers-CPL-RTB-LIQLE":"450fcd7320fa414295f447d0016df7f4.json",
-    "Medicare-ENG-WarmXfers": "c224e2ab0ed741d9a6ff14e62467606a.json",
   },
   BT02: {
     "Medicare-CPA-Xfers-ENG":"74d79a8336dd40cf996075c8db7030a2.json",
+    "Medicare-ENG-WarmXfers": "c224e2ab0ed741d9a6ff14e62467606a.json",
   },
   "Leads Expert": {
     "ACA-Xfers-CPL-RTB": "df87a13b4d9249a386676cd22000b6a4.json",

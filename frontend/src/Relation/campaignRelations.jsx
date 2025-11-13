@@ -11,7 +11,8 @@ export const campaignRelations = {
     "Medicare-ENG-WarmXfers"
   ],
   BT02: [
-    "Medicare-CPA-Xfers-ENG"
+    "Medicare-CPA-Xfers-ENG",
+    "Medicare-ENG-WarmXfers"
   ],
   "Leads Expert": [
     "ACA-Xfers-CPL-RTB",
