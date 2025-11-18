@@ -186,7 +186,7 @@ const Form = () => {
                     placeholder="example@example.com"
                   />
                 </div>
-                {!["BaliTech", " BT02", "FE-ENG-CPA-RTB"].includes(
+                {!["BaliTech", " BT02", "FE-ENG-CPA-RTB","NXTBPO"].includes(
                   campaign
                 ) && (
                   <div className="col-md-6">

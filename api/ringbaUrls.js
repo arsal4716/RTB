@@ -49,6 +49,9 @@ const ringbaId = {
   "Actual Sales": {
     "MVA-Xfers": "77dba2c5319749a0b7270fe6eea4787d.json",
   },
+  "NXTBPO": {
+    "ACA-Xfers-CPL-Scrub -RTB": "0a4a180cb6dd4383b628337e1ad01b09.json",
+  },
 };
 
 module.exports = { baseRingbaUrl, ringbaId };

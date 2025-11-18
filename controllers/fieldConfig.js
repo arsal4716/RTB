@@ -330,6 +330,17 @@ const fieldConfig = {
       "Age",
     ],
   },
+  "NXTBPO": {
+    "ACA-Xfers-CPL-Scrub -RTB": [
+      "phone",
+      "zipcode",
+      "exposeCallerId",
+      "agentName",
+      "state",
+      "jornaya_leadid",
+      "trusted_id"
+    ],
+  },
 };
 
 module.exports = fieldConfig;

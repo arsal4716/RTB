@@ -32,5 +32,6 @@ export const campaignRelations = {
   "RNT winkels": ["FE-ENG-CPA-RTB"],
   "MXZ": ["ACA-Scrub"],
   "RNT": ["ACA-CPL-Scrub"],
-  "Actual Sales":["MVA-Xfers"]
+  "Actual Sales":["MVA-Xfers"],
+  "NXTBPO":["ACA-Xfers-CPL-Scrub -RTB"]
 };

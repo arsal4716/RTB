@@ -147,9 +147,9 @@ const createForm = async (req, res) => {
               const Optin_Timestamp = record[6];
               const trustedFormUrl = record[7];
               if (leadId || trustedFormUrl || ip_address || Optin_Timestamp) {
-                formData.jornaya_leadid = formData.jornaya_leadid || leadId;
-                formData.trusted_id = formData.trusted_id || trustedFormUrl;
-                formData.ip_address = formData.ip_address || ip_address;
+                formData.jornaya_leadid = formData.jornaya_leadid || leadId || ".";
+                formData.trusted_id = formData.trusted_id || trustedFormUrl || ".";
+                formData.ip_address = formData.ip_address || ip_address || ".";
                 formData.Optin_Timestamp =
                   formData.Optin_Timestamp || Optin_Timestamp;
                 break;
